@@ -1,0 +1,58 @@
+node_modules/
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Editor specific
+.vscode/
+.idea/
+*.iml
+*.swp
+
+# Log files
+logs/
+*.log
+
+# Mac specific
+.DS_Store
+.AppleDouble
+Icon
+ehthumbs.db
+Thumbs.db
+
+# Compiled TypeScript
+*.tsbuildinfo
+
+# Dependency directories
+.pnpm-store/
+yarn.lock
+.pnp.js
+
+# Local TypeScript
+tsconfig.tsbuildinfo
+
+# Prettier cache
+.prettiercache
+
+# Jest coverage
+coverage/
+
+# MongoDB data directory
+data/
+db/
+
+# credentials
+*.pem
+
+# Ignore files that name includes service-account.json
+*-service-account.json
+firebase.json
