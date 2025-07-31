@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../../../domain/entities/User';
 import { AuthServicePort } from '../../../domain/ports/AuthServicePort';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret';
+const JWT_SECRET = process.env.JWT_SECRET ?? 'LaBatallaYaHaAEmpezado';
 
 export class AuthService implements AuthServicePort {
   async hashPassword(password: string): Promise<string> {
@@ -22,15 +22,13 @@ export class AuthService implements AuthServicePort {
     );
   }
 
-  async verifyToken(token: string): Promise<User | null> {
+  async verifyToken(token: string): Promise<{ id: string; email: string } | null> {
     try {
       const payload = jwt.verify(token, JWT_SECRET) as any;
-      return new User({
+      return {
         id: payload.id,
-        name: '',
-        email: payload.email,
-        password: '',
-      });
+        email: payload.email
+      };
     } catch {
       return null;
     }

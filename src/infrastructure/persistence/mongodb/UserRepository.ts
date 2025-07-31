@@ -1,8 +1,9 @@
 import { UserRepositoryPort } from '../../../domain/ports/UserRepositoryPort';
 import { User } from '../../../domain/entities/User';
 import { UserModel, UserDocument } from './UserModel';
+import { BaseRepository } from '../../../domain/repositories/BaseRepository';
 
-export class UserRepository implements UserRepositoryPort {
+export class UserRepository extends BaseRepository<User> implements UserRepositoryPort {
   async create(user: User): Promise<User> {
     const doc = await UserModel.create({
       name: user.name,
@@ -37,6 +38,22 @@ export class UserRepository implements UserRepositoryPort {
     );
     if (!doc) throw new Error('Usuario no encontrado');
     return this.toDomain(doc);
+  }
+
+  async save(user: User): Promise<User> {
+    return this.saveAggregate(user);
+  }
+
+  async publishEvents(events: any[]): Promise<void> {
+    await super.publishEvents(events);
+  }
+
+  protected async saveToDatabase(user: User): Promise<User> {
+    if (user.id) {
+      return this.update(user);
+    } else {
+      return this.create(user);
+    }
   }
 
   private toDomain(doc: UserDocument): User {

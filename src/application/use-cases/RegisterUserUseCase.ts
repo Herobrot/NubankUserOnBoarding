@@ -14,12 +14,21 @@ export class RegisterUserUseCase {
     if (existing) {
       throw new Error('El correo ya está registrado');
     }
+    
     const hashedPassword = await this.authService.hashPassword(dto.password);
     const user = new User({
       name: dto.name,
       email: dto.email,
       password: hashedPassword,
     });
-    return this.userRepository.create(user);
+    
+    // Ejecutar lógica de dominio
+    user.register();
+    
+    // Guardar y publicar eventos
+    const savedUser = await this.userRepository.save(user);
+    await this.userRepository.publishEvents(user.domainEvents);
+    
+    return savedUser;
   }
-} 
+}

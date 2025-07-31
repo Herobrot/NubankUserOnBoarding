@@ -13,9 +13,18 @@ export class VerifyKycUseCase {
     if (!user) {
       throw new Error('Usuario no encontrado');
     }
+    
     const status = await this.kycService.verifyIdentity(user, dto.documents);
-    user.kycStatus = status;
-    await this.userRepository.update(user);
+    
+    if (status === 'verified') {
+      user.verifyKyc(dto.documents);
+    } else if (status === 'rejected') {
+      user.rejectKyc('Documentos rechazados por el servicio KYC');
+    }
+    
+    await this.userRepository.save(user);
+    await this.userRepository.publishEvents(user.domainEvents);
+    
     return status;
   }
 } 

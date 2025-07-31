@@ -3,7 +3,6 @@ import { User } from '../../../domain/entities/User';
 
 export class KycServiceMock implements KycServicePort {
   async verifyIdentity(user: User, documents: any): Promise<'pending' | 'verified' | 'rejected'> {
-    // Simulación: siempre verifica correctamente
     return 'verified';
   }
 } 

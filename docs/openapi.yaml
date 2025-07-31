@@ -2,53 +2,258 @@ openapi: 3.0.0
 info:
   title: API Identidad y Onboarding - NuBank
   version: 1.0.0
-  description: API para registro, autenticación, verificación KYC y perfil de usuario.
+  description: |
+    API para registro, autenticación, verificación KYC y perfil de usuario.
+    
+    ## Flujo de uso típico:
+    1. **Registro**: Crear una nueva cuenta de usuario
+    2. **Login**: Obtener token JWT para autenticación
+    3. **KYC**: Verificar identidad con documentos (requiere autenticación)
+    4. **Perfil**: Consultar información del usuario autenticado
+    
+    ## Autenticación:
+    Los endpoints protegidos requieren el header `Authorization: Bearer <token>` donde el token se obtiene del endpoint de login.
+    
+    ### Cómo usar la autenticación en Swagger:
+    1. Haz clic en el botón "Authorize" (🔒) en la parte superior derecha
+    2. En el campo "bearerAuth", ingresa tu token JWT (sin "Bearer ")
+    3. Haz clic en "Authorize"
+    4. Ahora todos los endpoints protegidos usarán tu token automáticamente
 servers:
   - url: http://localhost:4000
 paths:
   /api/v1/auth/register:
     post:
       summary: Registro de nuevo usuario
+      tags:
+        - Autenticación
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - name
+                - email
+                - password
               properties:
                 name:
                   type: string
+                  description: Nombre completo del usuario
+                  example: "Juan Carlos Pérez"
                 email:
                   type: string
+                  format: email
+                  description: Correo electrónico del usuario
+                  example: "juan.perez@email.com"
                 password:
                   type: string
+                  format: password
+                  minLength: 8
+                  description: Contraseña del usuario (mínimo 8 caracteres)
+                  example: "MiContraseña123!"
+            examples:
+              registro_exitoso:
+                summary: Registro exitoso
+                value:
+                  name: "María González López"
+                  email: "maria.gonzalez@email.com"
+                  password: "ContraseñaSegura456!"
+              registro_minimo:
+                summary: Registro con datos mínimos
+                value:
+                  name: "Ana Silva"
+                  email: "ana.silva@email.com"
+                  password: "12345678"
       responses:
         '201':
-          description: Usuario registrado
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Usuario registrado exitosamente"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "507f1f77bcf86cd799439011"
+                      name:
+                        type: string
+                        example: "Juan Carlos Pérez"
+                      email:
+                        type: string
+                        example: "juan.perez@email.com"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2024-01-15T10:30:00.000Z"
         '400':
           description: Error de validación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Error de validación"
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          example: "email"
+                        message:
+                          type: string
+                          example: "El email ya está registrado"
+              examples:
+                email_duplicado:
+                  summary: Email ya registrado
+                  value:
+                    success: false
+                    message: "Error de validación"
+                    errors:
+                      - field: "email"
+                        message: "El email ya está registrado"
+                password_corta:
+                  summary: Contraseña muy corta
+                  value:
+                    success: false
+                    message: "Error de validación"
+                    errors:
+                      - field: "password"
+                        message: "La contraseña debe tener al menos 8 caracteres"
+
   /api/v1/auth/login:
     post:
       summary: Login de usuario
+      description: |
+        Autentica un usuario y retorna un token JWT para acceder a endpoints protegidos.
+        
+        **Después del login exitoso:**
+        1. Copia el token del campo "token" en la respuesta
+        2. Haz clic en "Authorize" (🔒) en la parte superior derecha de Swagger
+        3. Pega el token en el campo "bearerAuth" (sin "Bearer ")
+        4. Haz clic en "Authorize"
+        5. Ahora puedes usar los endpoints protegidos (/kyc/verify, /users/me)
+      tags:
+        - Autenticación
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - email
+                - password
               properties:
                 email:
                   type: string
+                  format: email
+                  description: Correo electrónico del usuario
+                  example: "juan.perez@email.com"
                 password:
                   type: string
+                  format: password
+                  description: Contraseña del usuario
+                  example: "MiContraseña123!"
+            examples:
+              login_exitoso:
+                summary: Login exitoso
+                value:
+                  email: "maria.gonzalez@email.com"
+                  password: "ContraseñaSegura456!"
+              login_admin:
+                summary: Login de administrador
+                value:
+                  email: "admin@nubank.com"
+                  password: "AdminPass123!"
       responses:
         '200':
           description: Login exitoso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Login exitoso"
+                  token:
+                    type: string
+                    description: JWT token para autenticación
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEiLCJlbWFpbCI6Imp1YW4ucGVyZXpAZW1haWwuY29tIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "507f1f77bcf86cd799439011"
+                      name:
+                        type: string
+                        example: "Juan Carlos Pérez"
+                      email:
+                        type: string
+                        example: "juan.perez@email.com"
+                      isVerified:
+                        type: boolean
+                        example: false
         '400':
           description: Credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Credenciales inválidas"
+              examples:
+                credenciales_incorrectas:
+                  summary: Credenciales incorrectas
+                  value:
+                    success: false
+                    message: "Email o contraseña incorrectos"
+                usuario_no_encontrado:
+                  summary: Usuario no encontrado
+                  value:
+                    success: false
+                    message: "Usuario no encontrado"
+
   /api/v1/kyc/verify:
     post:
       summary: Verificación de identidad (KYC)
+      description: |
+        Endpoint para verificar la identidad del usuario mediante documentos KYC.
+        
+        **⚠️ Requiere autenticación:** Este endpoint requiere un token JWT válido. 
+        Asegúrate de estar autenticado usando el botón "Authorize" en Swagger.
+        
+        **Nota importante:** En el entorno de desarrollo, este endpoint utiliza un servicio mock que siempre retorna 'APPROVED' para facilitar las pruebas.
+        En producción, este endpoint se conectará con un servicio real de verificación de identidad.
+      tags:
+        - KYC
       security:
         - bearerAuth: []
       requestBody:
@@ -57,27 +262,335 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - documents
               properties:
                 documents:
                   type: object
+                  description: Documentos para verificación KYC
+                  properties:
+                    dni:
+                      type: object
+                      properties:
+                        number:
+                          type: string
+                          description: Número de documento
+                          example: "12345678"
+                        type:
+                          type: string
+                          enum: ["DNI", "CE", "PASSPORT"]
+                          description: Tipo de documento
+                          example: "DNI"
+                        frontImage:
+                          type: string
+                          format: uri
+                          description: URL de la imagen frontal del documento
+                          example: "https://example.com/dni-front.jpg"
+                        backImage:
+                          type: string
+                          format: uri
+                          description: URL de la imagen trasera del documento
+                          example: "https://example.com/dni-back.jpg"
+                    selfie:
+                      type: object
+                      properties:
+                        imageUrl:
+                          type: string
+                          format: uri
+                          description: URL de la selfie del usuario
+                          example: "https://example.com/selfie.jpg"
+                    proofOfAddress:
+                      type: object
+                      properties:
+                        documentType:
+                          type: string
+                          enum: ["UTILITY_BILL", "BANK_STATEMENT", "RENTAL_AGREEMENT"]
+                          description: Tipo de documento de comprobante de domicilio
+                          example: "UTILITY_BILL"
+                        imageUrl:
+                          type: string
+                          format: uri
+                          description: URL del documento de comprobante de domicilio
+                          example: "https://example.com/address-proof.jpg"
+            examples:
+              kyc_completo:
+                summary: KYC con todos los documentos
+                value:
+                  documents:
+                    dni:
+                      number: "87654321"
+                      type: "DNI"
+                      frontImage: "https://storage.nubank.com/documents/user123/dni-front.jpg"
+                      backImage: "https://storage.nubank.com/documents/user123/dni-back.jpg"
+                    selfie:
+                      imageUrl: "https://storage.nubank.com/documents/user123/selfie.jpg"
+                    proofOfAddress:
+                      documentType: "UTILITY_BILL"
+                      imageUrl: "https://storage.nubank.com/documents/user123/address-proof.jpg"
+              kyc_minimo:
+                summary: KYC con documentos mínimos
+                value:
+                  documents:
+                    dni:
+                      number: "12345678"
+                      type: "DNI"
+                      frontImage: "https://storage.nubank.com/documents/user456/dni-front.jpg"
+                      backImage: "https://storage.nubank.com/documents/user456/dni-back.jpg"
+                    selfie:
+                      imageUrl: "https://storage.nubank.com/documents/user456/selfie.jpg"
       responses:
         '200':
           description: Estado de verificación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Verificación KYC aprobada"
+                  verificationId:
+                    type: string
+                    description: ID único de la verificación
+                    example: "ver_1753978642165_688b9711fdcc8126f86df58a"
+                  status:
+                    type: string
+                    enum: ["PENDING", "APPROVED", "REJECTED"]
+                    description: Estado de la verificación
+                    example: "APPROVED"
+                  estimatedTime:
+                    type: string
+                    description: Tiempo estimado de procesamiento
+                    example: "Completada"
+              examples:
+                verificacion_aprobada:
+                  summary: Verificación aprobada (comportamiento actual)
+                  value:
+                    success: true
+                    message: "Verificación KYC aprobada"
+                    verificationId: "ver_1753978642165_688b9711fdcc8126f86df58a"
+                    status: "APPROVED"
+                    estimatedTime: "Completada"
+                verificacion_rechazada:
+                  summary: Verificación rechazada
+                  value:
+                    success: true
+                    message: "Verificación KYC rechazada"
+                    verificationId: "ver_1753978642165_688b9711fdcc8126f86df58a"
+                    status: "REJECTED"
+                    estimatedTime: "Completada"
+                verificacion_pendiente:
+                  summary: Verificación en proceso
+                  value:
+                    success: true
+                    message: "Documentos recibidos para verificación"
+                    verificationId: "ver_1753978642165_688b9711fdcc8126f86df58a"
+                    status: "PENDING"
+                    estimatedTime: "24-48 horas"
         '400':
-          description: Error
+          description: Error en la verificación
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Error en la verificación"
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        field:
+                          type: string
+                          example: "documents"
+                        message:
+                          type: string
+                          example: "Documentos requeridos para la verificación KYC"
+              examples:
+                documentos_faltantes:
+                  summary: Documentos faltantes
+                  value:
+                    success: false
+                    message: "Error en la verificación"
+                    errors:
+                      - field: "documents"
+                        message: "Documentos requeridos para la verificación KYC"
+                error_general:
+                  summary: Error interno del servidor
+                  value:
+                    success: false
+                    message: "Error en la verificación"
+                    errors:
+                      - field: "general"
+                        message: "Error interno del servidor"
+        '401':
+          description: No autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Usuario no autenticado"
+              examples:
+                usuario_no_autenticado:
+                  summary: Usuario no autenticado
+                  value:
+                    success: false
+                    message: "Usuario no autenticado"
+
   /api/v1/users/me:
     get:
       summary: Obtener perfil del usuario autenticado
+      description: |
+        Obtiene el perfil completo del usuario autenticado.
+        
+        **⚠️ Requiere autenticación:** Este endpoint requiere un token JWT válido. 
+        Asegúrate de estar autenticado usando el botón "Authorize" en Swagger.
+      tags:
+        - Usuarios
       security:
         - bearerAuth: []
       responses:
         '200':
           description: Perfil de usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "507f1f77bcf86cd799439011"
+                      name:
+                        type: string
+                        example: "Juan Carlos Pérez"
+                      email:
+                        type: string
+                        example: "juan.perez@email.com"
+                      isVerified:
+                        type: boolean
+                        description: Estado de verificación KYC
+                        example: true
+                      kycStatus:
+                        type: string
+                        enum: ["PENDING", "APPROVED", "REJECTED", "NOT_SUBMITTED"]
+                        description: Estado de la verificación KYC
+                        example: "APPROVED"
+                      createdAt:
+                        type: string
+                        format: date-time
+                        example: "2024-01-15T10:30:00.000Z"
+                      updatedAt:
+                        type: string
+                        format: date-time
+                        example: "2024-01-20T14:45:00.000Z"
+              examples:
+                usuario_verificado:
+                  summary: Usuario con KYC aprobado
+                  value:
+                    success: true
+                    user:
+                      id: "507f1f77bcf86cd799439011"
+                      name: "Juan Carlos Pérez"
+                      email: "juan.perez@email.com"
+                      isVerified: true
+                      kycStatus: "APPROVED"
+                      createdAt: "2024-01-15T10:30:00.000Z"
+                      updatedAt: "2024-01-20T14:45:00.000Z"
+                usuario_pendiente:
+                  summary: Usuario con KYC pendiente
+                  value:
+                    success: true
+                    user:
+                      id: "507f1f77bcf86cd799439012"
+                      name: "María González"
+                      email: "maria.gonzalez@email.com"
+                      isVerified: false
+                      kycStatus: "PENDING"
+                      createdAt: "2024-01-18T09:15:00.000Z"
+                      updatedAt: "2024-01-19T16:30:00.000Z"
         '401':
           description: No autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Token de autenticación requerido"
+              examples:
+                token_faltante:
+                  summary: Token faltante
+                  value:
+                    success: false
+                    message: "Token de autenticación requerido"
+                token_invalido:
+                  summary: Token inválido
+                  value:
+                    success: false
+                    message: "Token de autenticación inválido"
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT 
+      bearerFormat: JWT
+      description: |
+        JWT token obtenido del endpoint de login.
+        
+        **Formato:** Solo el token JWT (sin "Bearer ")
+        **Ejemplo:** eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI1MDdmMWY3N2JjZjg2Y2Q3OTk0MzkwMTEiLCJlbWFpbCI6Imp1YW4ucGVyZXpAZW1haWwuY29tIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+  schemas:
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error en la operación"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: "email"
+              message:
+                type: string
+                example: "Campo requerido"
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operación exitosa" 
