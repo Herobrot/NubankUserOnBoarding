@@ -1,12 +1,13 @@
 import { AggregateRoot } from '../aggregates/AggregateRoot';
 import { UserRegisteredEvent, UserKycVerifiedEvent, UserKycRejectedEvent, UserProfileUpdatedEvent } from '../events/UserEvents';
+import { DomainKycStatus } from '../../shared/types/response.types';
 
 export interface UserProps {
   id?: string;
   name: string;
   email: string;
   password: string;
-  kycStatus?: 'pending' | 'verified' | 'rejected';
+  kycStatus?: DomainKycStatus;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -15,8 +16,8 @@ export class User extends AggregateRoot {
   public readonly id?: string;
   private _name: string;
   private _email: string;
-  private _password: string;
-  private _kycStatus: 'pending' | 'verified' | 'rejected';
+  private readonly _password: string;
+  private _kycStatus: DomainKycStatus;
   public readonly createdAt: Date;
   private _updatedAt: Date;
 
@@ -35,7 +36,7 @@ export class User extends AggregateRoot {
   get name(): string { return this._name; }
   get email(): string { return this._email; }
   get password(): string { return this._password; }
-  get kycStatus(): 'pending' | 'verified' | 'rejected' { return this._kycStatus; }
+  get kycStatus(): DomainKycStatus { return this._kycStatus; }
   get updatedAt(): Date { return this._updatedAt; }
 
   // Métodos de dominio

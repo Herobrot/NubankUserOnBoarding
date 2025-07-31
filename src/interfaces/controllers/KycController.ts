@@ -7,7 +7,8 @@ import {
   createErrorResponse,
   createGeneralError,
   createFieldError,
-  KycStatus
+  ApiKycStatus,
+  mapDomainKycStatusToApi
 } from '../../shared/types/response.types';
 
 const container = DependencyContainer.getInstance();
@@ -45,15 +46,8 @@ export class KycController {
         documents: req.body.documents 
       });
 
-      // Mapear el status del use case al formato del OpenAPI
-      let apiStatus: KycStatus;
-      if (status === 'verified') {
-        apiStatus = 'APPROVED';
-      } else if (status === 'rejected') {
-        apiStatus = 'REJECTED';
-      } else {
-        apiStatus = 'PENDING';
-      }
+      // Mapear el status del dominio al formato de la API
+      const apiStatus: ApiKycStatus = mapDomainKycStatusToApi(status);
 
       let message: string;
       if (status === 'verified') {

@@ -6,7 +6,8 @@ import {
   createSuccessResponse,
   createErrorResponse,
   createGeneralError,
-  KycStatus
+  ApiKycStatus,
+  mapDomainKycStatusToApi
 } from '../../shared/types/response.types';
 
 const container = DependencyContainer.getInstance();
@@ -39,17 +40,8 @@ export class UserController {
         return;
       }
       
-      // Mapear el kycStatus al formato del OpenAPI
-      let kycStatus: KycStatus;
-      if (userProfile.kycStatus === 'verified') {
-        kycStatus = 'APPROVED';
-      } else if (userProfile.kycStatus === 'rejected') {
-        kycStatus = 'REJECTED';
-      } else if (userProfile.kycStatus === 'pending') {
-        kycStatus = 'PENDING';
-      } else {
-        kycStatus = 'NOT_SUBMITTED';
-      }
+      // Mapear el kycStatus del dominio al formato de la API
+      const kycStatus: ApiKycStatus = mapDomainKycStatusToApi(userProfile.kycStatus);
       
       const response: ProfileApiResponse = createSuccessResponse(
         'Perfil obtenido exitosamente',

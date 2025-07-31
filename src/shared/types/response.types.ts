@@ -1,5 +1,8 @@
-// Tipos de estado KYC
-export type KycStatus = 'APPROVED' | 'REJECTED' | 'PENDING' | 'NOT_SUBMITTED';
+// Tipos de estado KYC del dominio
+export type DomainKycStatus = 'pending' | 'verified' | 'rejected';
+
+// Tipos de estado KYC para la API (formato OpenAPI)
+export type ApiKycStatus = 'APPROVED' | 'REJECTED' | 'PENDING' | 'NOT_SUBMITTED';
 
 // Tipos de estado de respuesta
 export type ResponseStatus = 'success' | 'error';
@@ -36,7 +39,7 @@ export interface UserResponse {
   name: string;
   email: string;
   isVerified?: boolean;
-  kycStatus?: KycStatus;
+  kycStatus?: ApiKycStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,7 +54,7 @@ export interface AuthResponse {
 export interface KycVerificationResponse {
   message: string;
   verificationId: string;
-  status: KycStatus;
+  status: ApiKycStatus;
   estimatedTime: string;
 }
 
@@ -76,6 +79,20 @@ export type RegisterApiResponse = SuccessResponse<RegisterResponse> | ErrorRespo
 export type LoginApiResponse = SuccessResponse<LoginResponse> | ErrorResponse;
 export type ProfileApiResponse = SuccessResponse<ProfileResponse> | ErrorResponse;
 export type KycVerificationApiResponse = SuccessResponse<KycVerificationResponse> | ErrorResponse;
+
+// Helper para mapear estados del dominio a la API
+export function mapDomainKycStatusToApi(domainStatus: DomainKycStatus): ApiKycStatus {
+  switch (domainStatus) {
+    case 'verified':
+      return 'APPROVED';
+    case 'rejected':
+      return 'REJECTED';
+    case 'pending':
+      return 'PENDING';
+    default:
+      return 'NOT_SUBMITTED';
+  }
+}
 
 // Helper para crear respuestas de error
 export function createErrorResponse(message: string, errors: ApiError[]): ErrorResponse {
