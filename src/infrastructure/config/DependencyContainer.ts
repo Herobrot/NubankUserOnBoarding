@@ -45,10 +45,14 @@ export class DependencyContainer {
   }
 
   private registerEventHandlers(): void {
-    this.eventBus.subscribe('UserRegisteredEvent', new UserRegisteredEventHandler());
-    this.eventBus.subscribe('UserKycVerifiedEvent', new UserKycVerifiedEventHandler());
-    this.eventBus.subscribe('UserKycRejectedEvent', new UserKycRejectedEventHandler());
-    this.eventBus.subscribe('UserProfileUpdatedEvent', new UserProfileUpdatedEventHandler());
+    this.eventBus.subscribe('UserRegisteredEvent', 
+      new UserRegisteredEventHandler());
+    this.eventBus.subscribe('UserKycVerifiedEvent', 
+      new UserKycVerifiedEventHandler());
+    this.eventBus.subscribe('UserKycRejectedEvent', 
+      new UserKycRejectedEventHandler());
+    this.eventBus.subscribe('UserProfileUpdatedEvent', 
+      new UserProfileUpdatedEventHandler());
   }
 
   public getUserService(): UserService {

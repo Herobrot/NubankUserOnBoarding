@@ -1,6 +1,7 @@
 import { KycVerifyDTO } from '../dtos/KycVerifyDTO';
 import { UserRepositoryPort } from '../../domain/ports/UserRepositoryPort';
 import { KycServicePort } from '../../domain/ports/KycServicePort';
+import { DomainKycStatus } from '../../shared/types/response.types';
 
 export class VerifyKycUseCase {
   constructor(
@@ -8,7 +9,7 @@ export class VerifyKycUseCase {
     private readonly kycService: KycServicePort
   ) {}
 
-  async execute(dto: KycVerifyDTO): Promise<'pending' | 'verified' | 'rejected'> {
+  async execute(dto: KycVerifyDTO): Promise<DomainKycStatus> {
     const user = await this.userRepository.findById(dto.userId);
     if (!user) {
       throw new Error('Usuario no encontrado');

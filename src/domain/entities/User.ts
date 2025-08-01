@@ -1,5 +1,8 @@
 import { AggregateRoot } from '../aggregates/AggregateRoot';
-import { UserRegisteredEvent, UserKycVerifiedEvent, UserKycRejectedEvent, UserProfileUpdatedEvent } from '../events/UserEvents';
+import { UserRegisteredEvent, 
+  UserKycVerifiedEvent, 
+  UserKycRejectedEvent, 
+  UserProfileUpdatedEvent } from '../events/UserEvents';
 import { DomainKycStatus } from '../../shared/types/response.types';
 
 export interface UserProps {
@@ -80,8 +83,10 @@ export class User extends AggregateRoot {
     ));
   }
 
-  public updateProfile(updates: Partial<{ name: string; email: string }>): void {
-    const updatedFields: Partial<{ name: string; email: string }> = {};
+  public updateProfile(updates: Partial<{ 
+    name: string; email: string }>): void {
+    const updatedFields: Partial<{ 
+      name: string; email: string }> = {};
 
     if (updates.name && updates.name !== this._name) {
       this._name = updates.name;

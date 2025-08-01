@@ -1,3 +1,5 @@
+import { DomainEvent } from '../../domain/events/DomainEvent';
+
 // Tipos de estado KYC del dominio
 export type DomainKycStatus = 'pending' | 'verified' | 'rejected';
 
@@ -58,6 +60,12 @@ export interface KycVerificationResponse {
   estimatedTime: string;
 }
 
+// Respuesta de verificación de token
+export interface TokenVerificationResponse {
+  id: string;
+  email: string;
+}
+
 // Respuesta de registro
 export interface RegisterResponse {
   user: UserResponse;
@@ -79,6 +87,21 @@ export type RegisterApiResponse = SuccessResponse<RegisterResponse> | ErrorRespo
 export type LoginApiResponse = SuccessResponse<LoginResponse> | ErrorResponse;
 export type ProfileApiResponse = SuccessResponse<ProfileResponse> | ErrorResponse;
 export type KycVerificationApiResponse = SuccessResponse<KycVerificationResponse> | ErrorResponse;
+
+// Tipos para el sistema de eventos y repositorios
+export type EventHandlerType<T extends DomainEvent> = (event: T) => Promise<void>;
+export type EventHandlerMap = Map<string, EventHandlerType<DomainEvent>[]>;
+export type EventHandlerArray = EventHandlerType<DomainEvent>[];
+
+// Tipos para repositorios
+export type AggregateType<T> = T & {
+  domainEvents: DomainEvent[];
+  clearEvents(): void;
+};
+
+export type RepositorySaveResult<T> = Promise<T>;
+export type EventPublishResult = Promise<void>;
+export type EventHandlerResult = Promise<void>;
 
 // Helper para mapear estados del dominio a la API
 export function mapDomainKycStatusToApi(domainStatus: DomainKycStatus): ApiKycStatus {

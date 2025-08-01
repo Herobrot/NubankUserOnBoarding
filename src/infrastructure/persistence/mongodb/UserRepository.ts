@@ -2,8 +2,11 @@ import { UserRepositoryPort } from '../../../domain/ports/UserRepositoryPort';
 import { User } from '../../../domain/entities/User';
 import { UserModel, UserDocument } from './UserModel';
 import { BaseRepository } from '../../../domain/repositories/BaseRepository';
+import { DomainEvent } from '../../../domain/events/DomainEvent';
+import { EventPublishResult } from '../../../shared/types/response.types';
 
-export class UserRepository extends BaseRepository<User> implements UserRepositoryPort {
+export class UserRepository extends BaseRepository<User> 
+implements UserRepositoryPort {
   async create(user: User): Promise<User> {
     const doc = await UserModel.create({
       name: user.name,
@@ -44,8 +47,8 @@ export class UserRepository extends BaseRepository<User> implements UserReposito
     return this.saveAggregate(user);
   }
 
-  async publishEvents(events: any[]): Promise<void> {
-    await super.publishEvents(events);
+  async publishEvents(events: DomainEvent[]): Promise<EventPublishResult> {
+    return super.publishEvents(events);
   }
 
   protected async saveToDatabase(user: User): Promise<User> {

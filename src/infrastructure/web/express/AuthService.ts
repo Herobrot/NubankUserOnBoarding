@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User } from '../../../domain/entities/User';
 import { AuthServicePort } from '../../../domain/ports/AuthServicePort';
+import { TokenVerificationResponse } from '../../../shared/types/response.types';
 
 const JWT_SECRET = process.env.JWT_SECRET ?? 'LaBatallaYaHaAEmpezado';
 
@@ -22,7 +23,7 @@ export class AuthService implements AuthServicePort {
     );
   }
 
-  async verifyToken(token: string): Promise<{ id: string; email: string } | null> {
+  async verifyToken(token: string): Promise<TokenVerificationResponse | null> {
     try {
       const payload = jwt.verify(token, JWT_SECRET) as any;
       return {

@@ -1,5 +1,6 @@
 import { User } from '../entities/User';
 import { DomainEvent } from '../events/DomainEvent';
+import { EventPublishResult } from '../../shared/types/response.types';
 
 export interface UserRepositoryPort {
   create(user: User): Promise<User>;
@@ -7,5 +8,5 @@ export interface UserRepositoryPort {
   findById(id: string): Promise<User | null>;
   update(user: User): Promise<User>;
   save(user: User): Promise<User>;
-  publishEvents(events: DomainEvent[]): Promise<void>;
+  publishEvents(events: DomainEvent[]): Promise<EventPublishResult>;
 } 

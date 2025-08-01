@@ -10,11 +10,11 @@ export interface EventBus {
     eventType: string,
     handler: EventHandler<T>
   ): void;
-  unsubscribe(eventType: string, handler: EventHandler<any>): void;
+  unsubscribe(eventType: string, handler: EventHandler<DomainEvent>): void;
 }
 
 export class InMemoryEventBus implements EventBus {
-  private readonly handlers: Map<string, EventHandler<any>[]> = new Map();
+  private readonly handlers: Map<string, EventHandler<DomainEvent>[]> = new Map();
 
   async publish(event: DomainEvent): Promise<void> {
     const handlers = this.handlers.get(event.eventType) || [];
@@ -36,10 +36,11 @@ export class InMemoryEventBus implements EventBus {
     if (!this.handlers.has(eventType)) {
       this.handlers.set(eventType, []);
     }
-    this.handlers.get(eventType)!.push(handler);
+    this.handlers.get(eventType)!.push(handler as EventHandler<DomainEvent>);
   }
 
-  unsubscribe(eventType: string, handler: EventHandler<any>): void {
+  unsubscribe(eventType: string, 
+    handler: EventHandler<DomainEvent>): void {
     const handlers = this.handlers.get(eventType);
     if (handlers) {
       const index = handlers.indexOf(handler);

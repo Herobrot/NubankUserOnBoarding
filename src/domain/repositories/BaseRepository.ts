@@ -1,13 +1,15 @@
 import { AggregateRoot } from '../aggregates/AggregateRoot';
 import { DomainEvent } from '../events/DomainEvent';
 import { EventBus } from '../events/EventBus';
+import { RepositorySaveResult, EventPublishResult } from '../../shared/types/response.types';
 
 export abstract class BaseRepository<T extends AggregateRoot> {
   constructor(
     protected readonly eventBus: EventBus
   ) {}
 
-  protected async publishEvents(events: DomainEvent[]): Promise<void> {
+  protected async publishEvents(events: DomainEvent[]): 
+  Promise<EventPublishResult> {
     for (const event of events) {
       await this.eventBus.publish(event);
     }
@@ -24,5 +26,5 @@ export abstract class BaseRepository<T extends AggregateRoot> {
     return savedAggregate;
   }
 
-  protected abstract saveToDatabase(aggregate: T): Promise<T>;
+  protected abstract saveToDatabase(aggregate: T): RepositorySaveResult<T>;
 } 
